@@ -13,6 +13,28 @@ function slugify(value: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
+export async function GET(request: Request) {
+  const adminSecret = process.env.ADMIN_SECRET;
+  const providedSecret = request.headers.get("x-admin-secret");
+
+  if (providedSecret !== adminSecret) {
+    return NextResponse.json({ error: "Invalid admin password." }, { status: 401 });
+  }
+
+  const supabase = getSupabaseAdminClient();
+
+  const { data: products, error } = await supabase
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ products });
+}
+
 export async function POST(request: Request) {
   try {
     const adminSecret = process.env.ADMIN_SECRET;
