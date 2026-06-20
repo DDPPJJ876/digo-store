@@ -1,4 +1,5 @@
 import { AdminProductForm } from "@/components/AdminProductForm";
+import { AdminProductManager } from "@/components/AdminProductManager";
 
 export default function AdminPage() {
   return (
@@ -14,6 +15,7 @@ export default function AdminPage() {
       </section>
 
       <AdminProductForm />
+      <AdminProductManager />
     </main>
   );
 }
