@@ -408,3 +408,56 @@ button {
     width: 120px;
   }
 }
+
+
+/* DIGO business console */
+.admin-shell { max-width: 1280px; padding-bottom: 72px; }
+.admin-login { display: grid; gap: 14px; margin: 72px auto; max-width: 440px; padding: 34px; }
+.admin-login h2 { font-size: 28px; margin: 0; }
+.admin-login-icon { align-items: center; background: #e7f3f1; border-radius: 12px; color: var(--accent); display: flex; height: 52px; justify-content: center; width: 52px; }
+.admin-dashboard { display: grid; gap: 20px; }
+.admin-toolbar { align-items: end; display: flex; gap: 24px; justify-content: space-between; padding-top: 34px; }
+.admin-toolbar h1 { font-size: clamp(34px, 5vw, 56px); line-height: 1; margin: 5px 0 10px; }
+.admin-toolbar-actions { display: flex; gap: 10px; }
+.eyebrow { color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .14em; margin: 0; }
+.admin-stats { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.admin-stat { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: grid; gap: 8px; padding: 20px; }
+.admin-stat span { color: var(--muted); font-size: 13px; }
+.admin-stat strong { font-size: 30px; }
+.admin-controls { align-items: center; display: flex; gap: 12px; padding: 12px; }
+.admin-search { align-items: center; display: flex; flex: 1; gap: 9px; }
+.admin-search input, .admin-controls select { background: transparent; border: 0; min-height: 40px; outline: none; width: 100%; }
+.admin-controls select { border-left: 1px solid var(--line); max-width: 170px; padding-left: 14px; }
+.admin-table { overflow: hidden; padding: 0; }
+.admin-table-head, .admin-table-row { align-items: center; display: grid; gap: 18px; grid-template-columns: minmax(280px, 1fr) 120px 100px 140px; padding: 14px 18px; }
+.admin-table-head { background: #f4f5f3; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+.admin-table-row { border-top: 1px solid var(--line); }
+.admin-product-identity { align-items: center; display: flex; gap: 14px; min-width: 0; }
+.admin-product-identity > div:last-child { display: grid; gap: 5px; min-width: 0; }
+.admin-product-identity small { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-badge { border-radius: 999px; font-size: 12px; font-weight: 700; padding: 6px 9px; text-align: center; width: fit-content; }
+.admin-badge.online { background: #e8f6ef; color: #17633b; }
+.admin-badge.hidden { background: #f1f2f2; color: #687076; }
+.icon-button.danger { color: var(--danger); }
+.admin-empty { color: var(--muted); padding: 40px; text-align: center; }
+.admin-modal-backdrop { align-items: center; background: rgba(15, 23, 22, .48); display: flex; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 50; }
+.admin-modal { box-shadow: 0 24px 80px rgba(0,0,0,.2); max-height: calc(100vh - 40px); max-width: 620px; overflow: auto; padding: 26px; width: 100%; }
+.admin-modal h2 { font-size: 28px; margin: 5px 0 24px; }
+.admin-modal .form { max-width: none; }
+.admin-modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+@media (max-width: 760px) {
+  .admin-toolbar { align-items: stretch; flex-direction: column; }
+  .admin-toolbar-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .admin-stats { grid-template-columns: 1fr 1fr 1fr; }
+  .admin-table-head { display: none; }
+  .admin-table-row { align-items: start; grid-template-columns: 1fr auto; }
+  .admin-product-identity { grid-column: 1 / -1; }
+  .admin-product-actions { grid-column: 2; grid-row: 2 / span 2; }
+}
+
+@media (max-width: 500px) {
+  .admin-stats { grid-template-columns: 1fr; }
+  .admin-controls { align-items: stretch; flex-direction: column; }
+  .admin-controls select { border-left: 0; border-top: 1px solid var(--line); max-width: none; }
+}
