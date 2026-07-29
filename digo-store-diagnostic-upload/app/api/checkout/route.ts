@@ -36,6 +36,12 @@ export async function POST(request: Request) {
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
+    payment_method_types: [
+      "card",
+      "alipay",
+      "wechat_pay",
+      "us_bank_account"
+    ],
     success_url: `${siteUrl}/checkout/success`,
     cancel_url: `${siteUrl}/checkout/cancel`,
     line_items: items.map((item) => {
