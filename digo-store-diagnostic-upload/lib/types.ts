@@ -10,7 +10,14 @@ export type Product = {
   created_at: string;
 };
 
+export type CartOptions = {
+  size?: string;
+  color?: string;
+};
+
 export type CartItem = {
+  lineKey: string;
   product: Product;
   quantity: number;
+  options: CartOptions;
 };
