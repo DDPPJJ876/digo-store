@@ -8,6 +8,15 @@ export type Product = {
   image_url: string | null;
   active: boolean;
   created_at: string;
+  style_code?: string;
+  category?: string;
+  material?: string;
+  weight?: string;
+  dimensions?: string;
+  supplier_price_cny?: number;
+  reserve_price_cents?: number;
+  source_catalog?: number;
+  catalog_preview_key?: string;
 };
 
 export type CartItem = {
