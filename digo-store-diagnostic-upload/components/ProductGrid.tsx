@@ -4,6 +4,17 @@ import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import { AddToCartButton } from "./AddToCartButton";
 
+function ProductPlaceholder({ product }: { product: Product }) {
+  const material = product.name.split(" — ")[0];
+  return (
+    <div className="product-media empty" style={{ minHeight: 320, flexDirection: "column", gap: 10 }}>
+      <span className="eyebrow">DIGO DISCOVERY</span>
+      <strong style={{ fontSize: 22, textAlign: "center", maxWidth: 220 }}>{material}</strong>
+      <span className="muted">Supplier-original image coming next</span>
+    </div>
+  );
+}
+
 export function ProductGrid({ products }: { products: Product[] }) {
   if (products.length === 0) {
     return (
@@ -20,14 +31,9 @@ export function ProductGrid({ products }: { products: Product[] }) {
         <article className="product-card" key={product.id}>
           <Link href={`/products/${product.slug}`} className="product-media">
             {product.image_url ? (
-              <Image
-                src={product.image_url}
-                alt={product.name}
-                width={900}
-                height={900}
-              />
+              <Image src={product.image_url} alt={product.name} width={900} height={900} />
             ) : (
-              <div className="product-media empty">No image</div>
+              <ProductPlaceholder product={product} />
             )}
           </Link>
           <div className="product-info">
@@ -35,9 +41,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
               <h2>{product.name}</h2>
             </Link>
             <div className="cart-row">
-              <span className="price">
-                {formatMoney(product.price_cents, product.currency)}
-              </span>
+              <span className="price">{formatMoney(product.price_cents, product.currency)}</span>
               <AddToCartButton product={product} />
             </div>
           </div>
