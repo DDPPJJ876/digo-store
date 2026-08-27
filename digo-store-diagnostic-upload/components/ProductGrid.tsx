@@ -4,6 +4,8 @@ import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 import { AddToCartButton } from "./AddToCartButton";
 
+const RESERVE_PRICE = "$4.50";
+
 function ProductPlaceholder({ product }: { product: Product }) {
   const material = product.name.split(" — ")[0];
   return (
@@ -40,8 +42,15 @@ export function ProductGrid({ products }: { products: Product[] }) {
             <Link href={`/products/${product.slug}`}>
               <h2>{product.name}</h2>
             </Link>
-            <div className="cart-row">
+            <div style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap", marginBottom: 10 }}>
               <span className="price">{formatMoney(product.price_cents, product.currency)}</span>
+              <span className="muted">Retail price</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <div>
+                <strong style={{ fontSize: 18 }}>{RESERVE_PRICE} Reserve</strong>
+                <div className="muted" style={{ fontSize: 13 }}>Reserve now. Demand unlocks the order.</div>
+              </div>
               <AddToCartButton product={product} />
             </div>
           </div>
