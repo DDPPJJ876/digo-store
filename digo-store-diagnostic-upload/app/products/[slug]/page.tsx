@@ -6,6 +6,8 @@ import { getProductBySlug } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
+const RESERVE_PRICE = "$4.50";
+
 export default async function ProductPage({
   params
 }: {
@@ -29,15 +31,29 @@ export default async function ProductPage({
             priority
           />
         ) : (
-          <div className="product-media empty">No image</div>
+          <div className="product-media empty">Supplier-original image coming next</div>
         )}
       </div>
 
       <section className="detail-copy">
+        <p className="eyebrow">DIGO DISCOVERY</p>
         <h1>{product.name}</h1>
         <div className="price">
           {formatMoney(product.price_cents, product.currency)}
         </div>
+        <p className="muted">Retail price</p>
+
+        <div className="panel" style={{ margin: "20px 0" }}>
+          <p className="eyebrow">RESERVE TODAY</p>
+          <h2 style={{ marginBottom: 8 }}>{RESERVE_PRICE}</h2>
+          <p style={{ marginBottom: 8 }}>
+            Reserve this product before Digo stocks it. Your reservation is the demand signal that helps unlock purchasing from the supplier.
+          </p>
+          <p className="muted" style={{ marginBottom: 0 }}>
+            Reservation terms and A/B refund options will be shown before payment.
+          </p>
+        </div>
+
         {product.description ? <p>{product.description}</p> : null}
         <AddToCartButton product={product} />
       </section>
