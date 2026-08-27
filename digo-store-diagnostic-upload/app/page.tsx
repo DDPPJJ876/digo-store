@@ -10,34 +10,37 @@ export default async function HomePage() {
     <main className="shell">
       <section className="hero">
         <div>
-          <p className="eyebrow">DIGO DIGITAL FASHION</p>
-          <h1>The Future of Digital Fashion.</h1>
+          <p className="eyebrow">DIGO · DISCOVER FROM CHINA</p>
+          <h1>Things China is making right now.</h1>
           <p>
-            Transforming physical fabrics into digital experiences. Every garment
-            carries a new identity built from material, design, and technology.
+            Discover wool, cashmere, yak and alpaca accessories sourced from
+            China-based suppliers. Browse first. Demand decides what Digo brings
+            to market.
           </p>
           <a className="button primary" href="#collection">
-            Explore Collection
+            Start Exploring
           </a>
         </div>
       </section>
 
       <section className="panel" style={{ marginTop: 32 }}>
-        <h2>Physical Fabric. Digital Intelligence.</h2>
+        <h2>Discover first. Stock second.</h2>
         <p>
-          DIGO combines real-world fabric knowledge with digital product
-          experiences, bringing customers closer to understanding how garments
-          look, feel, and fit.
+          Digo turns real shopper interest into a supply signal. We curate products
+          from China-based suppliers, test demand, and only move winning products
+          into inventory.
         </p>
         <div className="admin-stats" style={{ marginTop: 24 }}>
-          <div className="admin-stat"><span>Fabric Data</span><strong>Digital</strong></div>
-          <div className="admin-stat"><span>Garment Identity</span><strong>Unique</strong></div>
-          <div className="admin-stat"><span>Fit Experience</span><strong>Future</strong></div>
+          <div className="admin-stat"><span>Supplier styles</span><strong>{products.length}+</strong></div>
+          <div className="admin-stat"><span>Materials</span><strong>Wool · Cashmere · Yak · Alpaca</strong></div>
+          <div className="admin-stat"><span>Inventory model</span><strong>Demand-led</strong></div>
         </div>
       </section>
 
       <section id="collection" style={{ marginTop: 48 }}>
-        <p className="eyebrow">COLLECTION</p>
+        <p className="eyebrow">DISCOVER</p>
+        <h2>Winter accessories from China</h2>
+        <p className="muted">Scarves, wraps, beanies, gloves and socks curated for overseas shoppers.</p>
         <ProductGrid products={products} />
       </section>
     </main>

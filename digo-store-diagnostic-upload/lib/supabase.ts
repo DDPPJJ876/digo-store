@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Product } from "./types";
+import { supplierCatalog } from "./supplierCatalog";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -35,7 +36,7 @@ export function getSupabaseAdminClient() {
 
 export async function getActiveProducts() {
   if (!supabaseUrl || !supabaseAnonKey) {
-    return [];
+    return supplierCatalog;
   }
 
   const supabase = getSupabaseServerClient();
@@ -47,15 +48,19 @@ export async function getActiveProducts() {
 
   if (error) {
     console.error(error);
-    return [];
+    return supplierCatalog;
   }
 
-  return data as Product[];
+  const liveProducts = (data ?? []) as Product[];
+  const liveSlugs = new Set(liveProducts.map((product) => product.slug));
+  return [...liveProducts, ...supplierCatalog.filter((product) => !liveSlugs.has(product.slug))];
 }
 
 export async function getProductBySlug(slug: string) {
+  const supplierProduct = supplierCatalog.find((product) => product.slug === slug);
+
   if (!supabaseUrl || !supabaseAnonKey) {
-    return null;
+    return supplierProduct ?? null;
   }
 
   const supabase = getSupabaseServerClient();
@@ -66,9 +71,9 @@ export async function getProductBySlug(slug: string) {
     .eq("active", true)
     .single();
 
-  if (error) {
-    return null;
+  if (!error && data) {
+    return data as Product;
   }
 
-  return data as Product;
+  return supplierProduct ?? null;
 }
