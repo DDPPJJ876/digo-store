@@ -3,9 +3,36 @@ import Link from "next/link";
 import { formatMoney } from "@/lib/money";
 import type { Product } from "@/lib/types";
 
+const AVAILABLE_CATALOG_IMAGES = new Set([
+  "wool-scarves",
+  "wool-hats",
+  "cashmere-scarves",
+  "yak-scarves"
+]);
+
+function resolveProductImage(product: Product) {
+  if (product.image_url) return product.image_url;
+  if (product.catalog_preview_key && AVAILABLE_CATALOG_IMAGES.has(product.catalog_preview_key)) {
+    return `/catalog/${product.catalog_preview_key}.jpg`;
+  }
+  return null;
+}
+
 function ProductVisual({ product }: { product: Product }) {
-  if (product.image_url) {
-    return <Image src={product.image_url} alt={product.name} width={900} height={900} />;
+  const imageUrl = resolveProductImage(product);
+
+  if (imageUrl) {
+    return (
+      <div className="product-media" style={{ background: "#f4f2ee" }}>
+        <Image
+          src={imageUrl}
+          alt={product.name}
+          width={900}
+          height={900}
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      </div>
+    );
   }
 
   return (
