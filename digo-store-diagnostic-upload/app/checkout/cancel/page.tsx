@@ -1,15 +1,7 @@
 import Link from "next/link";
-
 export default function CheckoutCancelPage() {
-  return (
-    <main className="shell">
-      <section className="panel">
-        <h1>Checkout canceled</h1>
-        <p className="muted">No payment was taken.</p>
-        <Link className="button primary" href="/">
-          Back to store
-        </Link>
-      </section>
-    </main>
-  );
+  return <main className="shell"><section className="panel" style={{ marginTop: 40 }}>
+    <h1>Checkout cancelled</h1><p>Your cart is saved. You can review it and try again.</p>
+    <Link className="button primary" href="/checkout">Return to checkout</Link>
+  </section></main>;
 }
