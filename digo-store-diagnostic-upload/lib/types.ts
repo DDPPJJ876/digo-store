@@ -22,4 +22,6 @@ export type Product = {
 export type CartItem = {
   product: Product;
   quantity: number;
+  kind: "retail" | "reservation";
 };
+

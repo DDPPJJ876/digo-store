@@ -54,6 +54,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <p style={{ marginBottom: 8 }}>
             Reserve before Digo stocks the item. B-type discount reservations are the strong-demand signal used to decide whether procurement is unlocked.
           </p>
+          {product.reserve_price_cents && <div style={{ margin: "16px 0" }}><AddToCartButton product={product} kind="reservation" /></div>}
           <p className="muted" style={{ marginBottom: 0 }}>
             If procurement is not unlocked, the reservation is refunded. Once a B reservation unlocks procurement, its deposit follows the locked-price cancellation terms shown at payment.
           </p>
@@ -78,3 +79,4 @@ export default async function ProductPage({ params }: { params: { slug: string }
     </main>
   );
 }
+

@@ -54,3 +54,8 @@ The admin page uses `ADMIN_SECRET` from `.env.local` as its password.
 ## Notes
 
 This is an MVP admin flow. It is protected by a shared admin password, which is fine for a first private launch. For a larger team, replace it with Supabase Auth or a proper admin login.
+
+
+## Payment integration setup and verification
+
+See [PAYMENT_SETUP.md](PAYMENT_SETUP.md) for test-only Stripe configuration, the exact webhook URL, and end-to-end acceptance checks.
