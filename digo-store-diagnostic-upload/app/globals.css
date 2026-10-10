@@ -624,3 +624,92 @@ a,button,input,select { -webkit-tap-highlight-color:transparent; }
 .catalog-type-visual>span { font-size:10px; text-transform:uppercase; letter-spacing:.14em; }
 .catalog-type-visual>strong { font:32px/1.15 Georgia,serif; color:#655b4b; }
 .catalog-type-visual>small { font-size:10px; color:var(--muted); }
+
+/* Reservation selection and order review */
+.purchase-section { margin:24px 0; }
+.purchase-section-heading { display:flex; align-items:center; gap:12px; justify-content:space-between; }
+.purchase-section-heading h2 { font:25px/1.2 Georgia,serif; margin:0; }
+.preview-pill { display:inline-flex; width:fit-content; padding:5px 8px; background:#ece6dd; color:#766044; font-size:9px; letter-spacing:.05em; white-space:nowrap; }
+.purchase-mode { display:grid; grid-template-columns:1fr 1fr; margin:18px 0; }
+.purchase-mode button { min-height:44px; }
+.reservation-choices { border:0; margin:0; padding:0; display:grid; gap:10px; }
+.reservation-choices legend { padding:0 0 10px; font-size:11px; color:var(--muted); }
+.reservation-choice { display:flex; gap:10px; padding:16px; border:1px solid var(--line); cursor:pointer; background:#fffefa; }
+.reservation-choice.selected { border-color:var(--accent); background:#f1e9e3; }
+.reservation-choice input { accent-color:var(--accent); width:16px; height:16px; flex-shrink:0; margin:2px 0 0; }
+.reservation-choice-copy { display:grid; gap:9px; flex:1; }
+.reservation-choice-copy>span:last-child { font-size:11px; color:var(--muted); line-height:1.7; }
+.reservation-choice-title { display:flex; gap:7px; align-items:center; font-size:12px; }
+.reservation-choice-title b { margin-left:auto; font-weight:500; }
+.reservation-choice-title svg { flex-shrink:0; }
+.deposit-breakdown { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid var(--line); padding:18px 0; }
+.deposit-breakdown>div { display:grid; gap:8px; font-size:11px; }
+.deposit-breakdown>div:last-child { border-left:1px solid var(--line); padding-left:20px; }
+.deposit-breakdown strong { font:25px Georgia,serif; }
+.reservation-next { display:flex; align-items:flex-start; gap:10px; margin:19px 0 6px; font-size:11px; line-height:1.7; }
+.reservation-next>svg { margin-top:3px; flex-shrink:0; color:var(--accent); }
+.reservation-next p { margin:0; display:grid; gap:4px; }
+.reservation-next span,.purchase-fineprint { color:var(--muted); }
+.purchase-fineprint { font-size:10px; line-height:1.7; margin:8px 0 0; }
+.piece-detail-photo { aspect-ratio:1/1.25; background:#ece8dd; }
+.piece-detail-photo img { width:100%; height:100%; object-fit:contain; }
+.piece-detail-photo .catalog-type-visual { padding:35px; }
+.piece-detail-photo .catalog-type-visual strong { font-size:50px; }
+.piece-price { font:28px Georgia,serif; }
+.piece-price span { display:block; margin-top:10px; font:11px Arial,sans-serif; color:var(--muted); }
+.piece-specs>div { display:flex; justify-content:space-between; gap:20px; font-size:12px; border-bottom:1px solid var(--line); padding:14px 0; }
+.piece-specs dt { color:var(--muted); }.piece-specs dd { margin:0; text-align:right; }
+.transaction-shell { max-width:1150px; padding:35px 5% 90px; margin:auto; }
+.transaction-shell>.small-label { display:block; margin-top:10px; }
+.transaction-shell h1 { font:clamp(36px,4vw,54px)/1.1 Georgia,serif; letter-spacing:-.04em; margin:18px 0; }
+.transaction-intro { color:var(--muted); font-size:14px; margin-bottom:40px; }
+.checkout-grid { display:grid; grid-template-columns:1.15fr 1fr; gap:45px; align-items:start; }
+.checkout-line { display:flex; align-items:flex-start; gap:15px; padding:22px 0; border-top:1px solid var(--line); }
+.checkout-line-copy { display:grid; flex:1; gap:7px; font-size:13px; }
+.checkout-line-copy>span { color:var(--accent); font-size:11px; }
+.checkout-line-copy small { color:var(--muted); font-size:10px; line-height:1.7; }
+.checkout-line-price { display:grid; justify-items:end; gap:15px; font-size:13px; }
+.checkout-line-price strong { font-weight:500; }
+.checkout-line .piece-monogram { flex-shrink:0; }
+.checkout-explanation { padding:30px 0; border-top:1px solid var(--line); }
+.checkout-explanation h2 { font:27px Georgia,serif; }
+.checkout-explanation p { color:var(--muted); font-size:12px; line-height:1.8; }
+.checkout-summary { background:#eeebe3; padding:28px; }
+.summary-amounts { padding:18px 0 0; }
+.summary-amounts>div,.preview-amounts>div { display:flex; gap:16px; justify-content:space-between; margin-bottom:17px; font-size:12px; }
+.summary-amounts strong,.preview-amounts strong { font-weight:500; }
+.summary-amounts .summary-due { border-top:1px solid #d5cfc3; padding-top:20px; margin-top:23px; align-items:baseline; font-size:15px; }
+.summary-due strong { font:31px Georgia,serif; }
+.terms-consent { display:flex; gap:10px; font-size:11px; line-height:1.8; margin:22px 0; cursor:pointer; }
+.terms-consent input { accent-color:var(--accent); width:16px; height:16px; flex-shrink:0; margin:3px 0 0; }
+.terms-consent a { text-decoration:underline; text-underline-offset:2px; }
+.notice-banner { font-size:11px; line-height:1.8; background:#e6e1d6; padding:14px; margin:18px 0; }
+.payment-caption { font-size:10px; color:var(--muted); text-align:center; line-height:1.7; margin:15px 0 0; }
+.checkout-error { color:#9b2929; font-size:12px; }
+.preview-flow-button { border:1px solid #baaca0; background:transparent; display:flex; gap:10px; align-items:center; justify-content:center; min-height:43px; width:100%; margin-top:22px; font-size:11px; }
+.checkout-preview-area { grid-column:1/-1; display:grid; gap:24px; }
+.reservation-preview { max-width:640px; width:100%; margin:0 auto; padding:30px; background:#fffdf7; border:1px solid var(--line); }
+.preview-topline { display:flex; justify-content:space-between; align-items:center; }
+.order-stepper { display:flex; list-style:none; padding:23px 0; margin:5px 0 20px; justify-content:space-between; border-bottom:1px solid var(--line); gap:10px; }
+.order-stepper li { display:flex; align-items:center; gap:7px; font-size:10px; color:#777368; }
+.order-stepper li>span:first-child,.order-stepper li>svg { display:flex; align-items:center; justify-content:center; width:23px; height:23px; border:1px solid #cdc7bc; border-radius:50%; padding:3px; }
+.order-stepper .done { color:#526351; }.order-stepper .current { color:var(--accent); font-weight:700; }
+.order-stepper .current>span:first-child { background:var(--accent); color:white; border-color:var(--accent); }
+.preview-status { text-align:center; padding:10px 0; }
+.status-icon { display:flex; margin:0 auto 20px; width:52px; height:52px; background:#f0e8e0; border-radius:50%; align-items:center; justify-content:center; color:var(--accent); }
+.preview-status>.small-label { display:block; font-size:9px; }
+.preview-status h2 { font:35px/1.1 Georgia,serif; letter-spacing:-.03em; margin:16px 0; }
+.preview-status p { font-size:12px; color:var(--muted); line-height:1.8; max-width:440px; margin:0 auto 24px; }
+.preview-amounts { padding:22px; margin-bottom:20px; background:#f1eee6; }
+.preview-amounts>div:last-child { margin:0; }.preview-amounts .preview-balance { border-top:1px solid var(--line); padding-top:17px; }
+.preview-cancel { background:none; border:0; width:100%; margin-top:18px; text-decoration:underline; font-size:11px; color:var(--muted); }
+.terms-shell { max-width:780px; }.terms-shell>section { margin-top:30px; }.terms-shell h2 { font:25px Georgia,serif; }
+.terms-shell section p,.terms-shell li { font-size:13px; line-height:1.9; color:var(--muted); }.terms-shell li { margin-bottom:12px; padding-left:5px; }
+button:disabled { cursor:not-allowed; opacity:.5; }
+@media(max-width:760px) {
+ .checkout-grid { grid-template-columns:1fr; gap:22px; }.transaction-shell { padding-top:20px; }.transaction-intro { margin-bottom:25px; }
+ .checkout-summary,.reservation-preview { padding:22px; }.checkout-preview-area { grid-column:1; }
+ .purchase-section-heading h2 { font-size:24px; }.reservation-choice { padding:14px 12px; }.reservation-choice-title { flex-wrap:wrap; }
+ .reservation-choice-title b { margin-left:auto; }.reservation-choice-title svg { display:none; }.order-stepper { gap:5px; }.order-stepper li { gap:4px; font-size:9px; }
+ .preview-status h2 { font-size:31px; }.piece-detail-photo .catalog-type-visual strong { font-size:39px; }
+}

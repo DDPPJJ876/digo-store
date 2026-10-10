@@ -5,6 +5,7 @@ import { getStripe, getCheckoutSiteUrl } from "@/lib/stripe";
 import { supplierCatalog } from "@/lib/supplierCatalog";
 import { buildCheckout, CheckoutInputError, parseCheckoutItems } from "@/lib/checkout";
 import type { Product } from "@/lib/types";
+import { RESERVATION_TERMS_VERSION } from "@/lib/purchase";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export async function GET() {
   let available = false;
   try {
     getStripe(); getCheckoutSiteUrl(); getSupabaseAdminClient();
-    available = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
+    available = Boolean(process.env.STRIPE_WEBHOOK_SECRET) && (process.env.STRIPE_MODE ?? "test") === "test";
   } catch {}
   return NextResponse.json({ available, testMode: (process.env.STRIPE_MODE ?? "test") === "test" },
     { headers: { "Cache-Control": "no-store" } });
@@ -26,6 +27,9 @@ export async function POST(request: Request) {
 
   try {
     const items = parseCheckoutItems(body?.items);
+    if (items.some(item => item.kind === "reservation") && body.reservationTerms !== RESERVATION_TERMS_VERSION) {
+      throw new CheckoutInputError("Please read and accept the reservation terms before continuing.");
+    }
     if (typeof body.requestId !== "string" || !/^[a-zA-Z0-9-]{16,80}$/.test(body.requestId)) {
       throw new CheckoutInputError("Please refresh the checkout page and try again.");
     }
@@ -48,21 +52,22 @@ export async function POST(request: Request) {
       products.push(...(data ?? []) as Product[]);
     }
     const { line_items, metadata, hasRetail } = buildCheckout(items, products);
-    // Deposits remain in test mode until procurement/refund terms are implemented.
-    if ((process.env.STRIPE_MODE ?? "test") === "live" && items.some((item) => item.kind === "reservation")) {
-      throw new CheckoutInputError("Reservation payments are not available yet.");
+    // Live payments stay closed until inventory, fulfillment and final terms are ready.
+    if ((process.env.STRIPE_MODE ?? "test") === "live") {
+      throw new CheckoutInputError("Real payments are not open yet. Stock, shipping and final terms are being confirmed.");
     }
     const idempotencyKey = createHash("sha256").update(JSON.stringify({
-      requestId: body.requestId, line_items, siteUrl, mode: process.env.STRIPE_MODE ?? "test"
+      requestId: body.requestId, line_items, metadata, siteUrl, mode: process.env.STRIPE_MODE ?? "test"
     })).digest("hex");
     const session = await stripe.checkout.sessions.create({
-      mode: "payment", payment_method_types: ["card"],
+      // Omit payment_method_types: use eligible methods enabled in the Stripe Dashboard.
+      mode: "payment",
       success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/checkout/cancel`,
       billing_address_collection: "required",
       ...(hasRetail ? { shipping_address_collection: { allowed_countries: ["US" as const] } } : {}),
-      line_items, metadata,
-      payment_intent_data: { metadata: { digo_checkout: "v2" } }
+      line_items, metadata: { ...metadata, ...(metadata.reservation_terms ? { terms_accepted: "true" } : {}) },
+      payment_intent_data: { metadata: { digo_checkout: "v3" } }
     }, { idempotencyKey: `digo-${idempotencyKey}` });
     if (!session.url || session.status !== "open") {
       throw new CheckoutInputError("This checkout has expired or completed. Please start a new checkout.");

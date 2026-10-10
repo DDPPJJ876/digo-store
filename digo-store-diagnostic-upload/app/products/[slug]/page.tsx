@@ -1,82 +1,27 @@
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowLeft, CalendarDays } from "lucide-react";
 import { notFound } from "next/navigation";
-import { AddToCartButton } from "@/components/AddToCartButton";
+import { ProductPurchase } from "@/components/ProductPurchase";
 import { formatMoney } from "@/lib/money";
 import { getProductBySlug } from "@/lib/supabase";
+import { storefrontProduct } from "@/lib/storefront";
 
 export const dynamic = "force-dynamic";
-
 export default async function ProductPage({ params }: { params: { slug: string } }) {
   const product = await getProductBySlug(params.slug);
-
-  if (!product) {
-    notFound();
-  }
-
-  const reserve = product.reserve_price_cents ?? 450;
-
-  return (
-    <main className="shell detail">
-      <div className="product-media">
-        {product.image_url ? (
-          <Image src={product.image_url} alt={product.name} width={1200} height={1200} priority />
-        ) : (
-          <div
-            className="product-media empty"
-            style={{ minHeight: 620, padding: 42, flexDirection: "column", alignItems: "flex-start", justifyContent: "space-between" }}
-          >
-            <div>
-              <p className="eyebrow">DIGO · CHINA SUPPLIER CATALOG</p>
-              <div className="muted">SOURCE {product.source_catalog ?? "—"} / STYLE {product.style_code ?? "—"}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: 14, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 10 }}>
-                {product.category ?? "Accessory"}
-              </div>
-              <strong style={{ fontSize: 48, lineHeight: 1.02, maxWidth: 520, display: "block" }}>
-                {product.material ?? product.name}
-              </strong>
-            </div>
-            <div className="muted">Product imagery will be replaced with supplier-cleared original assets.</div>
-          </div>
-        )}
-      </div>
-
-      <section className="detail-copy">
-        <p className="eyebrow">DIGO DISCOVERY · STYLE {product.style_code}</p>
-        <h1>{product.name}</h1>
-        <div className="price">{formatMoney(product.price_cents, product.currency)}</div>
-        <p className="muted">Retail price</p>
-
-        <div className="panel" style={{ margin: "20px 0" }}>
-          <p className="eyebrow">RESERVE TODAY</p>
-          <h2 style={{ marginBottom: 8 }}>{formatMoney(reserve, "usd")}</h2>
-          <p style={{ marginBottom: 8 }}>
-            Reserve before Digo stocks the item. B-type discount reservations are the strong-demand signal used to decide whether procurement is unlocked.
-          </p>
-          {product.reserve_price_cents && <div style={{ margin: "16px 0" }}><AddToCartButton product={product} kind="reservation" /></div>}
-          <p className="muted" style={{ marginBottom: 0 }}>
-            If procurement is not unlocked, the reservation is refunded. Once a B reservation unlocks procurement, its deposit follows the locked-price cancellation terms shown at payment.
-          </p>
-        </div>
-
-        <div className="panel" style={{ margin: "20px 0" }}>
-          <p className="eyebrow">PRODUCT DETAILS</p>
-          <div className="admin-stats" style={{ marginTop: 16 }}>
-            <div className="admin-stat"><span>Style</span><strong>{product.style_code ?? "—"}</strong></div>
-            <div className="admin-stat"><span>Category</span><strong>{product.category ?? "—"}</strong></div>
-            <div className="admin-stat"><span>Material</span><strong>{product.material ?? "—"}</strong></div>
-            <div className="admin-stat"><span>Weight</span><strong>{product.weight ?? "—"}</strong></div>
-            <div className="admin-stat"><span>Size</span><strong>{product.dimensions ?? "—"}</strong></div>
-            <div className="admin-stat"><span>Source</span><strong>Supplier Catalog {product.source_catalog ?? "—"}</strong></div>
-          </div>
-        </div>
-
-        {product.description ? <p>{product.description}</p> : null}
-        <p className="eyebrow" style={{ marginTop: 24 }}>BUY AT RETAIL</p>
-        <AddToCartButton product={product} />
+  if (!product) notFound();
+  return <main className="look-detail-shell">
+    <Link className="text-link back-link" href="/shop"><ArrowLeft size={16}/>All pieces</Link>
+    <div className="look-detail-grid product-detail-grid">
+      <section><div className="piece-detail-photo">{product.image_url ? <Image src={product.image_url} alt={product.name} width={1200} height={1200} priority/> : <div className="catalog-type-visual"><span>DIGO · {product.category ?? "Accessory"}</span><strong>{product.material ?? product.name}</strong><small>Style {product.style_code ?? "—"} · Product photo coming soon</small></div>}</div>
+        <div className="styling-note"><span className="small-label">THE DETAILS</span><dl className="piece-specs">{[["Material",product.material],["Size",product.dimensions],["Weight",product.weight],["Style",product.style_code]].map(([key,value]) => value ? <div key={key}><dt>{key}</dt><dd>{value}</dd></div> : null)}</dl></div>
       </section>
-    </main>
-  );
+      <section className="look-builder"><span className="small-label">DIGO · THE PIECES</span><h1>{product.name}</h1><p className="piece-price">{formatMoney(product.price_cents,product.currency)} <span>Full product price · {product.currency.toUpperCase()}</span></p>
+        <p className="builder-intro">{product.material}{product.dimensions ? ` · ${product.dimensions}` : ""}</p>
+        <div className="delivery-panel"><CalendarDays size={19}/><div><strong>Stock and delivery to be confirmed</strong><p>Choose how you would like to buy. A reservation is a place in the queue, not a promise of immediate dispatch.</p></div></div>
+        <ProductPurchase product={storefrontProduct(product)}/>
+      </section>
+    </div>
+  </main>;
 }
-

@@ -4,16 +4,16 @@ import Link from "next/link";
 import { ShoppingBag, Trash2, X } from "lucide-react";
 import { formatMoney } from "@/lib/money";
 import type { CartItem, Product } from "@/lib/types";
-import type { PurchaseKind } from "@/lib/checkout";
+import { purchaseKey, purchaseLabel, CART_STORAGE_KEY, ATTEMPT_STORAGE_KEY, RESERVATION_TERMS_VERSION, type PurchaseKind, type ReservationPlan } from "@/lib/purchase";
 
-const storageKey = "digo-cart-v2";
-const attemptKey = "digo-checkout-attempt-v2";
+const storageKey = CART_STORAGE_KEY;
+const attemptKey = ATTEMPT_STORAGE_KEY;
 type CartContextValue = {
   items: CartItem[]; count: number; total: number; busy: boolean; error: string; available: boolean; testMode: boolean | null;
-  addItem: (product: Product, kind?: PurchaseKind) => void;
-  removeItem: (productId: string, kind?: PurchaseKind) => void;
+  addItem: (product: Product, kind?: PurchaseKind, plan?: ReservationPlan) => void;
+  removeItem: (productId: string, kind?: PurchaseKind, plan?: ReservationPlan) => void;
   clearCart: () => void;
-  setOpen: (open: boolean) => void; checkout: () => Promise<void>;
+  setOpen: (open: boolean) => void; checkout: (acceptedTerms?: boolean) => Promise<void>;
 };
 const CartContext = createContext<CartContextValue | null>(null);
 
@@ -40,7 +40,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         typeof item.product.id === "string" && typeof item.product.name === "string" &&
         Number.isSafeInteger(item.product.price_cents) && item.product.price_cents > 0 &&
         Number.isInteger(item.quantity) && item.quantity > 0 && item.quantity <= 99 &&
-        (item.kind === "retail" || (item.kind === "reservation" && Number.isSafeInteger(item.product.reserve_price_cents) && item.product.reserve_price_cents > 0))).slice(0,20));
+        (item.kind === "retail" || (item.kind === "reservation" && Number.isSafeInteger(item.product.reserve_price_cents) && item.product.reserve_price_cents > 0 && item.product.reserve_price_cents < item.product.price_cents && (item.reservationPlan === "refundable" || item.reservationPlan === "committed")))).slice(0,20));
     } catch { /* Storage can be unavailable in private browsing. */ }
     setReady(true);
   }, []);
@@ -49,25 +49,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, ready]);
   const count = items.reduce((sum, item) => sum + item.quantity, 0);
   const total = items.reduce((sum, item) => sum + (item.kind === "reservation" ? item.product.reserve_price_cents! : item.product.price_cents) * item.quantity, 0);
-  function addItem(product: Product, kind: PurchaseKind = "retail") {
+  function addItem(product: Product, kind: PurchaseKind = "retail", plan?: ReservationPlan) {
+    if (kind === "reservation" && !plan) { setError("Choose a reservation option first."); return; }
     setError("");
     setItems((current) => {
-      const existing = current.find((item) => item.product.id === product.id && item.kind === kind);
+      const existing = current.find((item) => purchaseKey(item.product.id,item.kind,item.reservationPlan) === purchaseKey(product.id,kind,plan));
       if (existing) return current.map((item) => item === existing ? { ...item, quantity: Math.min(99, item.quantity + 1) } : item);
       if (current.length >= 20) return current;
-      return [...current, { product, quantity: 1, kind }];
+      return [...current, { product, quantity: 1, kind, ...(kind === "reservation" ? { reservationPlan: plan } : {}) }];
     });
     setOpen(true);
   }
-  function removeItem(id: string, kind: PurchaseKind = "retail") {
+  function removeItem(id: string, kind: PurchaseKind = "retail", plan?: ReservationPlan) {
     setError("");
-    setItems((current) => current.map((item) => item.product.id === id && item.kind === kind
+    setItems((current) => current.map((item) => purchaseKey(item.product.id,item.kind,item.reservationPlan) === purchaseKey(id,kind,plan)
       ? { ...item, quantity: item.quantity - 1 } : item).filter((item) => item.quantity > 0));
   }
-  async function checkout() {
+  async function checkout(acceptedTerms = false) {
+    if (items.some(item => item.kind === "reservation") && !acceptedTerms) { setError("Please accept the reservation terms."); return; }
     if (inFlight.current || !items.length) return;
     inFlight.current = true; setBusy(true); setError("");
-    const payloadItems = items.map(({ product, quantity, kind }) => ({ id: product.id, quantity, kind }));
+    const payloadItems = items.map(({ product, quantity, kind, reservationPlan }) => ({ id: product.id, quantity, kind, ...(kind === "reservation" ? {reservationPlan} : {}) }));
     const fingerprint = JSON.stringify(payloadItems);
     let requestId: string = crypto.randomUUID();
     try {
@@ -77,7 +79,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     } catch {}
     try {
       const response = await fetch("/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: payloadItems, requestId }) });
+        body: JSON.stringify({ items: payloadItems, requestId, ...(acceptedTerms ? { reservationTerms: RESERVATION_TERMS_VERSION } : {}) }) });
       const payload = await response.json();
       if (!response.ok) {
         if (response.status === 400) try { sessionStorage.removeItem(attemptKey); } catch {}
@@ -97,9 +99,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       <aside className="cart-drawer" aria-label="Shopping cart">
         <div className="cart-head cart-row"><strong>Cart</strong><button className="icon-button" aria-label="Close cart" onClick={() => setOpen(false)}><X size={18} /></button></div>
         <div className="cart-list">{!items.length ? <p className="muted">Your cart is empty.</p> : items.map((item) =>
-          <div className="cart-item" key={`${item.product.id}:${item.kind}`}>
-            <div className="cart-row"><strong>{item.product.name}</strong><button className="icon-button" onClick={() => removeItem(item.product.id, item.kind)} aria-label={`Remove ${item.product.name}`}><Trash2 size={16} /></button></div>
-            <p className="muted">{item.kind === "reservation" ? "Reservation deposit" : "Full product price"}</p>
+          <div className="cart-item" key={purchaseKey(item.product.id,item.kind,item.reservationPlan)}>
+            <div className="cart-row"><strong>{item.product.name}</strong><button className="icon-button" onClick={() => removeItem(item.product.id, item.kind, item.reservationPlan)} aria-label={`Remove ${item.product.name}`}><Trash2 size={16} /></button></div>
+            <p className="muted">{purchaseLabel(item.kind,item.reservationPlan)}</p>
             <div className="cart-row muted"><span>Qty {item.quantity}</span><span>{formatMoney((item.kind === "reservation" ? item.product.reserve_price_cents! : item.product.price_cents) * item.quantity)}</span></div>
           </div>)}</div>
         <div className="cart-foot"><div className="cart-row"><strong>Due today</strong><strong>{formatMoney(total)}</strong></div>

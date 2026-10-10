@@ -28,6 +28,7 @@ function load(entry, overrides = {}, cache = new Map()) {
   return module.exports;
 }
 const core = load('lib/checkout.ts');
+const {RESERVATION_TERMS_VERSION}=load('lib/purchase.ts');
 const catalog = load('lib/supplierCatalog.ts').supplierCatalog;
 const product = catalog[0];
 const item = { id: product.id, quantity: 1, kind: 'retail' };
@@ -76,7 +77,7 @@ test('supplier catalog prices override all client supplied amounts',()=>{
  assert.throws(()=>core.buildCheckout([item],[{...product,active:false}]));
 });
 test('reservation charges exactly the catalog deposit and preserves retail amount',()=>{
- const result=core.buildCheckout([{...item,kind:'reservation'}],[product]);
+ const result=core.buildCheckout([{...item,kind:'reservation',reservationPlan:'refundable'}],[product]);
  assert.equal(result.line_items[0].price_data.unit_amount,450);
  assert.equal(JSON.parse(result.metadata.item_0).retail_unit_amount,product.price_cents);
  assert.equal(result.hasRetail,false);
@@ -88,7 +89,7 @@ test('supplier checkout does not send supplier IDs to UUID database query; retri
  assert.equal((await route.POST(request(body))).status,200);
  assert.equal(f.productQueries.length,0);
  assert.equal(f.creates[0].options.idempotencyKey,f.creates[1].options.idempotencyKey);
- assert.deepEqual(f.creates[0].params.payment_method_types,['card']);
+ assert.equal(f.creates[0].params.payment_method_types,undefined); // Dashboard controls eligible methods.
  assert.match(f.creates[0].params.success_url,/session_id=\{CHECKOUT_SESSION_ID\}/);
  assert.deepEqual(f.creates[0].params.shipping_address_collection.allowed_countries,['US']);
 });
@@ -100,7 +101,7 @@ test('unreachable order table blocks Stripe session creation before payment',asy
 test('unknown IDs, missing request ID, and real-money reservations are rejected',async()=>{
  const f=fixture({mode:'live'});const route=load('app/api/checkout/route.ts',f.overrides);
  for(const body of [{items:[item]},{items:[{...item,id:'missing'}],requestId:'attempt-00000000003'},
- {items:[{...item,kind:'reservation'}],requestId:'attempt-00000000004'}]) assert.equal((await route.POST(request(body))).status,400);
+ {items:[{...item,kind:'reservation',reservationPlan:'refundable'}],requestId:'attempt-00000000004'}]) assert.equal((await route.POST(request(body))).status,400);
  assert.equal(f.creates.length,0);
 });
 test('a valid paid webhook is idempotent; replay cannot overwrite order state',async()=>{
@@ -144,4 +145,51 @@ test('test mode rejects live keys and validates redirect origin',()=>{
   process.env.NEXT_PUBLIC_SITE_URL='https://digo.example';assert.equal(getCheckoutSiteUrl(),'https://digo.example');
   process.env.VERCEL_ENV='preview';process.env.VERCEL_URL='preview.vercel.app';assert.equal(getCheckoutSiteUrl(),'https://preview.vercel.app');
  } finally {for(const key of ['STRIPE_MODE','STRIPE_SECRET_KEY','NEXT_PUBLIC_SITE_URL','VERCEL_ENV','VERCEL_URL']) {if(saved[key]===undefined)delete process.env[key];else process.env[key]=saved[key];}}
+});
+
+test('A and B reservations stay separate and only trusted deposit prices are charged',()=>{
+ const items=core.parseCheckoutItems([{...item,kind:'reservation',reservationPlan:'refundable',unit_amount:1},
+  {...item,kind:'reservation',reservationPlan:'committed',unit_amount:1}]);
+ assert.equal(items.length,2);
+ const result=core.buildCheckout(items,[product]);
+ assert.equal(result.metadata.reservation_terms,RESERVATION_TERMS_VERSION);
+ assert.equal(JSON.parse(result.metadata.item_0).reservationPlan,'refundable');
+ assert.equal(JSON.parse(result.metadata.item_1).reservationPlan,'committed');
+ assert.equal(result.line_items[0].price_data.unit_amount,450);
+ assert.equal(result.line_items[1].price_data.unit_amount,450);
+ for(const reservationPlan of [undefined,'free',null]) assert.throws(()=>core.parseCheckoutItems([{...item,kind:'reservation',reservationPlan}]));
+ assert.throws(()=>core.parseCheckoutItems([{...item,reservationPlan:'committed'}]));
+ assert.throws(()=>core.buildCheckout(items,[{...product,reserve_price_cents:product.price_cents+1}]));
+});
+test('reservation consent is required on the server and repeated requests keep identical Stripe parameters',async()=>{
+ const f=fixture();const route=load('app/api/checkout/route.ts',f.overrides);
+ const body={items:[{...item,kind:'reservation',reservationPlan:'committed'}],requestId:'attempt-reservation-00001'};
+ assert.equal((await route.POST(request(body))).status,400); assert.equal(f.creates.length,0);
+ const accepted={...body,reservationTerms:RESERVATION_TERMS_VERSION};
+ assert.equal((await route.POST(request(accepted))).status,200);
+ assert.equal((await route.POST(request(accepted))).status,200);
+ assert.deepEqual(f.creates[0],f.creates[1]);
+ assert.equal(f.creates[0].params.metadata.terms_accepted,'true');
+ assert.equal(f.creates[0].params.shipping_address_collection,undefined);
+ assert.equal((await route.POST(request({...accepted,items:[{...body.items[0],reservationPlan:'refundable'}]}))).status,200);
+ assert.notEqual(f.creates[0].options.idempotencyKey,f.creates[2].options.idempotencyKey);
+});
+test('verified paid v3 deposits queue once; unpaid deposits do not join and balance is calculated from snapshot',async()=>{
+ const f=fixture();const route=load('app/api/stripe/webhook/route.ts',f.overrides);
+ const built=core.buildCheckout([{...item,quantity:2,kind:'reservation',reservationPlan:'committed'}],[product]);
+ const depositSession={...session,amount_total:900,metadata:built.metadata};
+ assert.equal((await route.POST(webhookRequest(f.stripe,{...depositSession,payment_status:'unpaid'}))).status,200);
+ assert.equal(f.orders.size,0);
+ assert.equal((await route.POST(webhookRequest(f.stripe,depositSession))).status,200);
+ assert.equal(f.orders.get(session.id).metadata.fulfillment_state,'queued');
+ assert.deepEqual(core.reservationSummary(built.metadata),[{plan:'committed',quantity:2,deposit:900,balance:(product.price_cents-450)*2}]);
+ assert.equal((await route.POST(webhookRequest(f.stripe,depositSession))).status,200);assert.equal(f.orders.size,1);
+});
+test('all live collection remains closed until fulfilment is implemented',async()=>{
+ const f=fixture({mode:'live'});const route=load('app/api/checkout/route.ts',f.overrides);
+ assert.equal((await route.GET()).status,200); assert.equal((await (await route.GET()).json()).available,false);
+ for(const items of [[item],[{...item,kind:'reservation',reservationPlan:'refundable'}],[{...item,kind:'reservation',reservationPlan:'committed'}]]) {
+  assert.equal((await route.POST(request({items,requestId:'live-closed-000001',reservationTerms:RESERVATION_TERMS_VERSION}))).status,400);
+ }
+ assert.equal(f.creates.length,0);
 });
