@@ -713,3 +713,5 @@ button:disabled { cursor:not-allowed; opacity:.5; }
  .reservation-choice-title b { margin-left:auto; }.reservation-choice-title svg { display:none; }.order-stepper { gap:5px; }.order-stepper li { gap:4px; font-size:9px; }
  .preview-status h2 { font-size:31px; }.piece-detail-photo .catalog-type-visual strong { font-size:39px; }
 }
+
+.preview-topline button { border:0; background:transparent; }
